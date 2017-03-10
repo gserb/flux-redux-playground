@@ -1,4 +1,4 @@
-# Flux-Redux Exemplar
+# Flux-Redux Playground
 
 ## Getting started
 To run application, run
