@@ -64,6 +64,12 @@ class TasksStore extends ReduceStore {
                     complete: false
                 });
                 return newState;
+                
+            case COMPLETE_TASK:
+                newState = { ...state, tasks: [...state.tasks]};
+                const affectedElementIndex = newState.tasks.findIndex(t=>t.id === action.id);
+                return newState;
+
             case SHOW_TASKS:
                 newState = { ...state, tasks: [...state.tasks], showComplete: action.value };
                 return newState;
@@ -91,6 +97,14 @@ const render = () => {
         .filter(task => state.showComplete ? true : !task.complete)
         .map(TaskComponent).join("");
     tasksSection.innerHTML = rendered;
+
+    document.getElementsByClassName('taskCompleteCheck').forEach(element => {
+        element.addEventListener('change', (e) => {
+            const id = e.target.attributes['data-taskid'].value;
+            const checked = e.target.checked;
+            tasksDispatcher.dispatch(completeTaskAction(id, checked));
+        })
+    })
 }
 
 document.forms.newTask.addEventListener('submit', (e)=> {
