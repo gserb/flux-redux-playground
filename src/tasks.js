@@ -64,7 +64,7 @@ class TasksStore extends ReduceStore {
                     complete: false
                 });
                 return newState;
-                
+
             case COMPLETE_TASK:
                 newState = { ...state, tasks: [...state.tasks]};
                 const affectedElementIndex = newState.tasks.findIndex(t=>t.id === action.id);
@@ -87,6 +87,11 @@ const TaskComponent = ({content, complete, id}) => {
     </section>`
 }
 
+document.forms.undo.addEventListener('submit', (e) => {
+    e.preventDefault();
+    tasksStore.revertLastState();
+})
+
 /**
  * Update what is on the page based on the state
  */
@@ -98,7 +103,7 @@ const render = () => {
         .map(TaskComponent).join("");
     tasksSection.innerHTML = rendered;
 
-    document.getElementsByClassName('taskCompleteCheck').forEach(element => {
+    document.getElementsByName('taskCompleteCheck').forEach(element => {
         element.addEventListener('change', (e) => {
             const id = e.target.attributes['data-taskid'].value;
             const checked = e.target.checked;
