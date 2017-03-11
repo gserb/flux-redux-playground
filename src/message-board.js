@@ -1,5 +1,7 @@
-import { createStore, combineReducers } from 'redux';
+console.log('mesage board');
+import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { get } from './http';
+import logger from 'redux-logger';
 
 export const ONLINE = 'ONLINE';
 export const AWAY = 'AWAY';
@@ -41,7 +43,10 @@ const combineReducer = combineReducers({
     messages: messagesReducer
 });
 
-const store = createStore(combineReducer);
+const store = createStore(
+    combineReducer,
+    applyMiddleware(logger())
+);
 
 const render = () => {
     const { messages, userStatus } = store.getState();
