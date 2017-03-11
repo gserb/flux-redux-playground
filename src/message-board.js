@@ -16,19 +16,41 @@ const defaultState = {
     userStatus: ONLINE
 };
 
-const store = createStore((state = defaultState)=>{
+const reducer = (state=defaultState, {type=value}) => {
+    switch(type) {
+        case UPDATE_STATUS:
+            return { ...state, userStatus: value };
+            break;
+    }
     return state;
-});
+}
+
+const store = createStore(reducer);
 
 const render = () => {
     const { messages, userStatus } = store.getState();
     document.getElementById('messages').innerHTML = messages
         .sort((a,b) => b.date - a.date)
-        .map(messages => {
+        .map(message => (
             `<div>
                 ${message.postedBy}: ${message.content}
             </div>`
-        }).join("");
+        )).join("");
+
+    document.forms.newMessage.fields.disabled = ( userStatus === OFFLINE );
 };
 
+const statusUpdateAction = (value) => {
+    return {
+        type: UPDATE_STATUS,
+        value
+    }
+}
+
+document.forms.selectStatus.status.addEventListener("change", (e) => {
+    store.dispatch(statusUpdateAction(e.target.value));
+})
+
 render();
+
+store.subscribe(render);
