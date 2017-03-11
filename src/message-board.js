@@ -11,13 +11,42 @@ export const OFFLINE = 'OFFLINE';
 export const UPDATE_STATUS = 'UPDATE_STATUS'; 
 export const CREATE_NEW_MESSAGE = 'CREATE_NEW_MESSAGE';
 
+export const READY = 'READY';
+export const WAITING = 'WAITING';
+export const NEW_MESSAGE_SERVER_ACCEPTED = 'NEW_MESSAGE_SERVER_ACCEPTED'; 
+
+const statusUpdateAction = (value) => {
+    return {
+        type: UPDATE_STATUS,
+        value
+    }
+};
+
+const newMessageAction = (content, postedBy) => {
+    const date = new Date();
+
+    get('/api/create', (id) => {
+        store.dispatch({
+            type: NEW_MESSAGE_SERVER_ACCEPTED
+        })
+    });
+
+    return {
+        type: CREATE_NEW_MESSAGE,
+        value: content,
+        postedBy,
+        date
+    }
+};
+
 const defaultState = {
     messages: [{
         date: new Date('2017-01-01 10:11:55'),
         postedBy: 'Vasilica',
         content: 'I <3 new productivy app!'
     }],
-    userStatus: ONLINE
+    userStatus: ONLINE,
+    apiCommunicationStatus: READY
 };
 
 const userStatusReducer = (state = defaultState.userStatus, {type, value}) => {
@@ -25,6 +54,16 @@ const userStatusReducer = (state = defaultState.userStatus, {type, value}) => {
         case UPDATE_STATUS:
             return value;
             break;
+    }
+    return state;
+};
+
+const apiCommunicationStatusReducer = (state = READY, {type}) => {
+    switch (type) {
+        case CREATE_NEW_MESSAGE:
+            return WAITING;
+        case NEW_MESSAGE_SERVER_ACCEPTED:
+            return READY;
     }
     return state;
 };
@@ -40,7 +79,8 @@ const messagesReducer = (state = defaultState.messages, {type, value, postedBy, 
 
 const combineReducer = combineReducers({
     userStatus: userStatusReducer,
-    messages: messagesReducer
+    messages: messagesReducer,
+    apiCommunicationStatusReducer: apiCommunicationStatusReducer
 });
 
 const store = createStore(
@@ -49,7 +89,7 @@ const store = createStore(
 );
 
 const render = () => {
-    const { messages, userStatus } = store.getState();
+    const { messages, userStatus, apiCommunicationStatus } = store.getState();
     document.getElementById('messages').innerHTML = messages
         .sort((a,b) => b.date - a.date)
         .map(message => (
@@ -58,7 +98,7 @@ const render = () => {
             </div>`
         )).join("");
 
-    document.forms.newMessage.fields.disabled = ( userStatus === OFFLINE );
+    document.forms.newMessage.fields.disabled = ( userStatus === OFFLINE || apiCommunicationStatus === WAITING );
     document.forms.newMessage.newMessage.value = "";
 };
 
@@ -69,22 +109,7 @@ document.forms.newMessage.addEventListener("submit", (e) => {
     store.dispatch(newMessageAction(value, username));
 });
 
-const statusUpdateAction = (value) => {
-    return {
-        type: UPDATE_STATUS,
-        value
-    }
-};
 
-const newMessageAction = (content, postedBy) => {
-    const date = new Date();
-    return {
-        type: CREATE_NEW_MESSAGE,
-        value: content,
-        postedBy,
-        date
-    }
-};
 
 document.forms.selectStatus.status.addEventListener("change", (e) => {
     store.dispatch(statusUpdateAction(e.target.value));
